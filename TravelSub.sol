@@ -57,6 +57,8 @@ contract TravelSub is Ownable, ERC721 {
         _admin = admin;
         _uri = uri;
     }
+    
+    // TODO: add time checking features
 
     function create_ticket(
         uint256 schedule,
