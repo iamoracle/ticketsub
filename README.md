@@ -1,6 +1,6 @@
 # ticketsub
 
-A simple ticketing system for air travelers. 
+A simple ticketing system for air travellers. 
 
 This smart contract allows airlines to issue tickets.
 
