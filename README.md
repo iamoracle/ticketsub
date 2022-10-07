@@ -1,4 +1,4 @@
-#ticketsub
+# ticketsub
 
 A simple ticketing system for air travelers. This smart contract allows airlines to issue tickets. 
 Every time a ticket is purchased, an NFT will be sent to the user. The user signs using their wallet to redeem the ticket for the actual flight. 
