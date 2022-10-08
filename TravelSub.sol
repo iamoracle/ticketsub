@@ -14,6 +14,7 @@ contract TravelSub is Ownable, ERC721 {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
+    Counters.Counter private _ticketsCount;
 
     address _account;
 
@@ -44,8 +45,6 @@ contract TravelSub is Ownable, ERC721 {
 
     string _uri;
 
-    uint256 _ticketsCount;
-
     constructor(
         string memory name,
         string memory symbol,
@@ -58,7 +57,11 @@ contract TravelSub is Ownable, ERC721 {
         _uri = uri;
     }
     
-    // TODO: add time checking features
+    
+    modifier valid(uint _id){
+        require(_tickets[_id].id != 0, "invalid identifier");
+        _;
+    }
 
     function create_ticket(
         uint256 schedule,
@@ -67,8 +70,8 @@ contract TravelSub is Ownable, ERC721 {
         uint16 origin,
         uint16 destination
     ) public onlyOwner {
-        _tickets[_ticketsCount - 1] = Ticket(
-            ++_ticketsCount,
+        _tickets[_ticketsCount.current()] = Ticket(
+            _ticketsCount.current(),
             block.timestamp,
             schedule,
             expires,
@@ -78,12 +81,12 @@ contract TravelSub is Ownable, ERC721 {
             address(0),
             TicketStatus.DEFAULT
         );
+        _ticketsCount.increment();
     }
 
-    function buy_ticket(uint256 id) public {
+    function buy_ticket(uint256 id) public valid(id){
         Ticket storage ticket = _tickets[id];
-        require(ticket.id != 0, "invalid identifier given");
-        require(ticket.status == TicketStatus.DEFAULT);
+        require(ticket.status == TicketStatus.DEFAULT, "can't buy");
         _currency.transferFrom(msg.sender, _admin, ticket.price);
         ticket.status = TicketStatus.SOLD;
         ticket.owner = msg.sender;
@@ -92,9 +95,8 @@ contract TravelSub is Ownable, ERC721 {
 
     // TODO: use modifiers for DRY
 
-    function destroy_ticket(uint256 id) public onlyOwner {
+    function destroy_ticket(uint256 id) public onlyOwner valid(id){
         Ticket storage ticket = _tickets[id];
-        require(ticket.id != 0, "invalid identifier given");
         require(ticket.status == TicketStatus.DEFAULT);
         ticket.status = TicketStatus.CANCELLED;
     }
@@ -113,9 +115,7 @@ contract TravelSub is Ownable, ERC721 {
             "invalid signature provided"
         );
 
-        Ticket storage ticket = _tickets[id];
-
-        ticket.status = TicketStatus.REDEEMED;
+        _tickets[id].status = TicketStatus.REDEEMED;
     }
 
     function getApprovalHash(uint256 id) external view returns (bytes32) {
